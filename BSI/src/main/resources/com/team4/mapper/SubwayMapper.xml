@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- package-name : com.demoweb.mapper, class-name : BoardMapper -->
+<mapper namespace="com.team4.mapper.SubwayMapper">
+
+	<insert id="insertSubway" parameterType="List" >
+	INSERT INTO subway (sname, line, snumber) 
+	VALUES 
+	<foreach collection="list" item="item" separator=",">
+	(#{ item.sname }, #{ item.line },#{ item.snumber })
+	</foreach>
+	</insert>
+
+	<insert id="insertCustomer" parameterType="List" >
+	INSERT INTO CUSTOMER (snumber, DATE, HOUR, DIVISION, unumber) 
+	VALUES 
+	<foreach collection="list" item="item" separator=",">
+	(#{ item.snumber }, #{ item.date }, #{ item.hour }, #{ item.division }, #{ item.unumber })
+	</foreach>
+	</insert>
+	
+	<select id="selectrank" resultType="StationVO">
+	select dense_rank() over(order by sum(unumber) desc) as ranking,
+		   sname as sname, division, round(sum(unumber)/243,0) as unumber
+		   from customer join subway on subway.snumber = customer.snumber
+		   GROUP BY customer.snumber, customer.division limit 5;
+	</select>
+	
+	<select id="selectAvg" resultType="StationVO">
+	Select round(sum(unumber)/243,0) as unumber
+	from customer;
+	</select>
+	
+	<insert id="insertMember" parameterType="MembersVO">
+	INSERT INTO member (memberId, passwd, email)
+	VALUES (#{ memberId }, #{ passwd }, #{ email } )
+	</insert>
+	
+	<resultMap type="MembersVO" id="memberResult">
+		<result property="memberId" column="memberId"/>
+		<result property="email" column="email"/>
+		<result property="userType" column="usertype"/>
+		<result property="regDate" column="regdate"/>
+	</resultMap>
+	
+	<select id="selectMemberIdAndPasswd" parameterType="String" resultMap="memberResult">
+	SELECT memberId, email, usertype, regdate 
+	FROM member
+	WHERE memberId = #{ memberId } AND passwd = #{ passwd }
+	</select>
+	
+	<resultMap type="MembersVO" id="memberlist">
+		<result property="memberId" column="memberId"/>
+		<result property="email" column="email"/>
+		<result property="userType" column="usertype"/>
+		<result property="regDate" column="regdate"/>
+	</resultMap>
+	
+	<select id="selectAll" resultMap="memberlist">
+	SELECT memberId, email, usertype, regDate
+	FROM member
+	</select>
+	
+	<select id="selectMemberId" parameterType="String" resultMap="memberlist">
+	SELECT memberId, email, usertype, REGDATE
+	FROM MEMBER
+	WHERE MEMBERID = #{ memberId }
+	</select>
+	
+	<update id="updateMember" parameterType="MembersVO">
+	UPDATE MEMBER
+	SET USERTYPE = #{ userType }, EMAIL = #{ email }
+	WHERE MEMBERID = #{ memberId }
+	</update>
+	
+	<delete id="deleteMember" parameterType="String">
+	DELETE
+	FROM member
+	WHERE memberId = '${ memberId }'
+	</delete>	
+	
+	<select id="selectline" resultType="int">
+	SELECT DISTINCT LINE
+	FROM SUBWAY
+	</select>
+	
+	<select id="selectSnameGroupByLine" parameterType="int" resultType="String">
+	SELECT SNAME
+	FROM SUBWAY
+	WHERE LINE = '${ lname }'
+	</select>
+	
+	<update id="editMember" parameterType="String">
+	UPDATE MEMBER
+	SET EMAIL='${ email }' , PASSWD = '${ passwd }'
+	WHERE MEMBERID = '${ memberId }'	
+	</update>
+	
+	<insert id="insertlist" parameterType="String">
+	INSERT INTO jjim (snumber, memberId)
+	select snumber, memberId from subway join member where sname = '${ sname }' and memberId = '${ memberId }' 
+	</insert>
+	
+	<select id="selectjjim" resultType="JjimVO">
+	SELECT sname, regDate, memberId
+	FROM jjim join subway on jjim.snumber = subway.snumber
+	WHERE memberId = '${ memberId }'
+	ORDER BY regDate
+	</select>
+	
+	<delete id="deletejjim">
+	DELETE
+	FROM jjim
+	WHERE jjim.snumber IN (SELECT subway.snumber FROM subway WHERE sname = '${ sname }') and
+	memberId = '${ memberId }'
+	</delete>
+	
+	<!-- 휘연님 작업 영역 시작 -->
+	
+	<select id="selectAllSubwayNames" resultType="hashmap">
+	SELECT distinct snumber, sname
+	FROM subway
+	</select>
+	
+	<select id="selectTimeCustomers" resultType="TimeCustomersVO">
+	select s.sname, c.date, hour, c.division, c.unumber
+	from customer c join subway s 
+	on s.snumber = c.snumber
+	where c.snumber =${ snumber }
+	and c.hour= '${ hour }'
+	</select>
+	
+	<select id="selectAvgByDate" resultType="TimeCustomersVO">
+	select avg(unumber) as avgnumber
+	from customer
+	where snumber =${ snumber }
+	group by date, division
+	
+	</select>
+	<!-- 휘연님 작업 영역 끝 -->
+	
+	<resultMap type="StationVO" id="findStation">
+	 <result property="sname" column="sname"/>
+	 <result property="snumber" column="snumber"/>
+	 <result property="date" column="date"/>
+	 <result property="hour" column="hour"/>
+	 <result property="division" column="division"/>
+	 <result property="unumber" column="unumber"/>
+	</resultMap>
+	
+	<select id="selectStation" parameterType="String" resultMap="findStation">
+	SELECT Subway.sname, CUSTOMER.date, CUSTOMER.hour, CUSTOMER.division , CUSTOMER.unumber
+	FROM CUSTOMER JOIN SUBWAY
+	WHERE CUSTOMER.snumber = (SELECT subway.snumber FROM SUBWAY WHERE subway.sname='${ station }') and hour='${ time }' and subway.sname='${ station }'
+	</select>
+	
+	<resultMap type="MaxMinVO" id="findMaxMin">
+	 <result property="sname" column="sname"/>
+	 <result property="date" column="date"/>
+	 <result property="hour" column="hour"/>
+	 <result property="division" column="division"/>
+	 <result property="unumber" column="unumber"/>
+	</resultMap>
+	
+	<select id="selectStationAndMaxMin" parameterType="String" resultMap="findMaxMin">
+	select subway.sname, customer.date, customer.hour, customer.division , customer.unumber
+	from customer join subway
+	where customer.unumber=(select ${ MaxMin }(customer.unumber) from customer, subway  where customer.snumber = (select subway.snumber from subway where subway.sname='${ station }'))
+	and subway.sname ='${ station }'
+	and customer.snumber = (select subway.snumber from subway where subway.sname = '${ station }')
+	</select>
+	
+	<select id="selectSname" resultType="String">
+	SELECT SNAME
+	FROM SUBWAY
+	</select>
+	
+	<select id="selectSum" parameterType="String" resultType="MaxMinVO">
+	select sum(customer.unumber)/243 as sum
+	from customer
+	where customer.snumber = (select subway.snumber from subway where subway.sname= '${ station }')
+	</select>
+	
+	<select id="countname" resultType="int">
+	select count(*)
+	from jjim j join subway s
+	on s.snumber = j.snumber
+	where j.snumber = (select s2.snumber from subway s2 where s2.sname = '${ sname }')
+	and memberId = '${ memberId }'
+	</select>
+	
+	<select id="IdCheck" resultType="String">
+	SELECT COUNT(*)
+	FROM member
+	where MEMBERID = '${ memberId }'
+	</select>
+	
+</mapper>

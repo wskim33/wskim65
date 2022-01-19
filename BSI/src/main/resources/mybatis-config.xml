@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE configuration
+	PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<!-- 
+		~Mapper.xml 에서 사용할 타입이름을 미리 등록하는 설정 
+		BoardVO가 나오면 com.demoweb.vo.BoardVO로 처리하라는 의미
+	-->
+	<typeAliases>
+		<typeAlias type="com.team4.vo.SubwayVO" alias="SubwayVO" />
+		<typeAlias type="com.team4.vo.BoardVO" alias="BoardVO" />
+		<typeAlias type="com.team4.vo.StationVO" alias="StationVO" />
+		<typeAlias type="com.team4.vo.MembersVO" alias="MembersVO" />
+		<typeAlias type="com.team4.vo.MembersVO" alias="CustomerVO" />
+		<typeAlias type="com.team4.vo.LineVO" alias="LineVO" />
+		<typeAlias type="com.team4.vo.JjimVO" alias="JjimVO" />
+		<typeAlias type="com.team4.vo.TimeCustomersVO" alias="TimeCustomersVO" />
+		<typeAlias type="com.team4.vo.MaxMinVO" alias="MaxMinVO" />
+	
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="com/team4/mapper/SubwayMapper.xml"/>
+		<mapper resource="com/team4/mapper/BoardMapper.xml"/>
+		<mapper resource="com/team4/mapper/LineMapper.xml"/>
+	</mappers>
+	
+	
+</configuration>
